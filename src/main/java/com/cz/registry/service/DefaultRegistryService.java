@@ -20,8 +20,8 @@ public abstract class DefaultRegistryService implements RegistryService {
     /**
      * register instance
      *
-     * @param service service name
-     * @param instance    register instance
+     * @param service  service name
+     * @param instance register instance
      * @return register instance
      */
     @Override
@@ -43,8 +43,8 @@ public abstract class DefaultRegistryService implements RegistryService {
     /**
      * unregister instance
      *
-     * @param service service name
-     * @param instance    register instance
+     * @param service  service name
+     * @param instance register instance
      * @return register instance
      */
     @Override
@@ -53,12 +53,11 @@ public abstract class DefaultRegistryService implements RegistryService {
         if (instances == null || instances.isEmpty()) {
             return null;
         }
-        if (instances.contains(instance)) {
-            log.info("czRegistry===>unregister instance {}", instance.transferToUrl());
-            REGISTRY.remove(service, instance);
-            instance.setStatus(false);
-        }
-        return instance;
+        boolean removeIf = instances.removeIf(instance::equals);
+        log.info("czRegistry===>unregister instance {}", instance.transferToUrl());
+        instance.setStatus(false);
+        // TODO 未找到需要取消注册的实例时,需要给出对应的报错信息
+        return removeIf ? instance : null;
     }
 
     /**

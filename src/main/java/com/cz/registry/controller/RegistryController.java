@@ -1,5 +1,6 @@
 package com.cz.registry.controller;
 
+import com.alibaba.fastjson2.JSON;
 import com.cz.registry.meta.InstanceMeta;
 import com.cz.registry.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * rest controller for registry
@@ -56,17 +58,16 @@ public class RegistryController {
     /**
      * 取消注册指定的服务实例。
      *
-     * @param service 要取消注册的服务名称。
-     * @param host    要取消注册的服务实例的主机地址。
-     * @param port    要取消注册的服务实例的端口号。
+     * @param service  要取消注册的服务名称。
+     * @param instance 需要注册的服务实例信息，以JSON格式通过请求体传入。
      * @return InstanceMeta 该方法返回取消注册的服务实例的元数据。
      */
-    @RequestMapping(value = "/unregister", method = RequestMethod.GET)
-    public InstanceMeta unregister(@RequestParam String service, String host, Integer port) {
+    @RequestMapping(value = "/unregister", method = RequestMethod.POST)
+    public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录取消注册服务的请求信息
-        log.info("unregister service:{} host:{} port:{}", service, host, port);
+        log.info("unregister service:{} instance:{} ", service, instance);
         // 调用注册中心服务，取消注册指定的服务实例
-        return registryService.unregister(service, InstanceMeta.http(host, port));
+        return registryService.unregister(service, instance);
     }
 
 
@@ -82,6 +83,20 @@ public class RegistryController {
         log.info("fetchAll service:{}", service);
         // 调用服务注册中心，查询并返回指定服务的所有实例信息
         return registryService.fetchAll(service);
+    }
+
+    /**
+     * 测试打印实例信息
+     *
+     * @return instance info json
+     */
+    @RequestMapping(value = "/printMetaInfo", method = RequestMethod.GET)
+    public String printMetaInfo() {
+        InstanceMeta instance = InstanceMeta.http("127.0.0.1", 9091)
+                .addParams(Map.of("env", "dev", "tag", "RED"));
+        String msg = JSON.toJSONString(instance);
+        log.info(msg);
+        return msg;
     }
 
 }

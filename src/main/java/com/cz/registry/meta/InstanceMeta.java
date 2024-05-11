@@ -3,6 +3,7 @@ package com.cz.registry.meta;
 import com.alibaba.fastjson2.JSON;
 import lombok.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -85,5 +86,21 @@ public class InstanceMeta {
      */
     public String metasTransfer() {
         return JSON.toJSONString(getParams());
+    }
+
+    /**
+     * 设置附加参数列表
+     *
+     * @param params 附加参数
+     * @return instanceMeta
+     */
+    public InstanceMeta addParams(Map<String, String> params) {
+        Map<String, Object> peek = this.getParams();
+        if (peek == null) {
+            peek = new HashMap<>();
+        }
+        peek.putAll(params);
+        this.setParams(peek);
+        return this;
     }
 }
