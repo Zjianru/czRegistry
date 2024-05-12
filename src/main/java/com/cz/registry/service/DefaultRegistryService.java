@@ -42,7 +42,8 @@ public abstract class DefaultRegistryService implements RegistryService {
      * key->service and instance url
      * value->timestamp
      */
-    final Map<String, Long> TIMESTAMPS = new ConcurrentHashMap<>();
+    final static Map<String, Long> TIMESTAMPS = new ConcurrentHashMap<>();
+
 
     /**
      * register instance
@@ -139,5 +140,13 @@ public abstract class DefaultRegistryService implements RegistryService {
     @Override
     public Map<String, Long> versions(String... service) {
         return Arrays.stream(service).collect(Collectors.toMap(k -> k, k -> VERSIONS.get(k).getInstanceVersion()));
+    }
+
+    public static Map<String, Long> getAllTimestamps() {
+        return TIMESTAMPS;
+    }
+
+    public static void removeTimestamp(String serviceAndInstance) {
+        TIMESTAMPS.remove(serviceAndInstance);
     }
 }

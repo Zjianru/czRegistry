@@ -3,6 +3,7 @@ package com.cz.registry.meta;
 import com.alibaba.fastjson2.JSON;
 import lombok.*;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -103,4 +104,24 @@ public class InstanceMeta {
         this.setParams(peek);
         return this;
     }
+
+
+    /**
+     * 从给定的URL创建一个InstanceMeta实例。
+     *
+     * @param instanceUtl 待解析的实例URL字符串。
+     * @return InstanceMeta实例，包含了URL的主机名、端口号、路径、协议等信息。
+     */
+    public static InstanceMeta fromUrl(String instanceUtl) {
+        // 解析输入的URL字符串为URI对象
+        URI uri = URI.create(instanceUtl);
+        // 基于URI对象的信息，创建并返回一个新的InstanceMeta实例
+        return new InstanceMeta(uri.getHost(),
+                uri.getPort(),
+                uri.getPath().substring(1), // 路径去除第一个字符("/")，因为它是根路径的标识
+                uri.getScheme(),
+                true, null); // 设置InstanceMeta为活动状态，默认参数为null
+    }
+
+
 }
