@@ -99,4 +99,48 @@ public class RegistryController {
         return msg;
     }
 
+    /**
+     * 重新注册服务实例。
+     * 该方法用于当服务实例需要更新或重新注册时调用，通过接收服务名称和实例元数据，来实现服务的重新注册。
+     *
+     * @param service  表示需要重新注册的服务名称。
+     * @param instance 表示需要重新注册的服务实例的元数据信息，通过RequestBody接收，允许客户端以JSON格式提交。
+     *                 方法不返回任何内容，操作结果通过日志记录或直接通过服务注册过程中的反馈来体现。
+     */
+    @RequestMapping(value = "/reNew", method = RequestMethod.GET)
+    public void reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
+        // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
+        log.info("reNew service:{} instance:{}", service, instance);
+        // 调用注册服务的reNew方法，以实例和服务名称为参数，执行重新注册操作。
+        registryService.reNew(instance, service);
+    }
+
+    /**
+     * 请求当前服务的版本信息。
+     *
+     * @param service 需要查询版本的服务名称。
+     * @return 返回对应服务的版本号，类型为Long。
+     */
+    @RequestMapping(value = "/version", method = RequestMethod.GET)
+    public Long version(@RequestParam String service) {
+        // 记录请求版本信息的日志
+        log.info("version service:{}", service);
+        return registryService.version(service); // 通过服务注册中心查询指定服务的版本号
+    }
+
+    /**
+     * 查询指定服务的版本信息。
+     *
+     * @param service 需要查询版本信息的服务名，多个服务名以逗号分隔。
+     * @return 返回一个Map，其中key为服务名，value为该服务的版本号。
+     */
+    @RequestMapping(value = "/versions", method = RequestMethod.GET)
+    public Map<String, Long> versions(@RequestParam String service) {
+        // 记录请求信息
+        log.info("versions service:{}", service);
+        // 调用服务注册中心，查询指定服务的版本信息
+        return registryService.versions(service.split(","));
+    }
+
+
 }
