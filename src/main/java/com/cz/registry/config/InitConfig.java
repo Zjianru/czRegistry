@@ -9,19 +9,31 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * config all bean for registry
+ * config all bean for registry when application start
  *
  * @author Zjianru
  */
 @Configuration
-public class BeanConfig {
+public class InitConfig {
 
+    /**
+     * create registry service
+     *
+     * @return RegistryService
+     */
     @Bean
-    RegistryService registryService(){
+    RegistryService registryService() {
         return new CzRegistryService();
     }
+
+    /**
+     * autowire healthChecker
+     *
+     * @param registryService registry service implementation
+     * @return HealthChecker
+     */
     @Bean(initMethod = "start", destroyMethod = "stop")
-    HealthChecker healthChecker(@Autowired RegistryService registryService){
+    HealthChecker healthChecker(@Autowired RegistryService registryService) {
         return new CzHealthChecker(registryService);
     }
 }
