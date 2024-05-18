@@ -1,5 +1,6 @@
 package com.cz.registry.config;
 
+import com.cz.registry.cluster.Cluster;
 import com.cz.registry.health.CzHealthChecker;
 import com.cz.registry.health.HealthChecker;
 import com.cz.registry.service.RegistryService;
@@ -36,4 +37,9 @@ public class InitConfig {
     HealthChecker healthChecker(@Autowired RegistryService registryService) {
         return new CzHealthChecker(registryService);
     }
+@Bean
+    public Cluster cluster(@Autowired ConfigProperties configProperties) {
+        return new Cluster(configProperties);
+    }
+
 }

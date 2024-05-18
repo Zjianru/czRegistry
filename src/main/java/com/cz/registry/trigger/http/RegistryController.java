@@ -1,6 +1,8 @@
-package com.cz.registry.controller;
+package com.cz.registry.trigger.http;
 
 import com.alibaba.fastjson2.JSON;
+import com.cz.registry.cluster.Cluster;
+import com.cz.registry.cluster.Server;
 import com.cz.registry.meta.InstanceMeta;
 import com.cz.registry.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,9 @@ public class RegistryController {
 
     @Autowired
     RegistryService registryService;
+
+    @Autowired
+    Cluster cluster;
 
 
     /**
@@ -141,6 +146,39 @@ public class RegistryController {
         log.info("versions service:{}", service);
         // 调用服务注册中心，查询指定服务的版本信息
         return registryService.versions(service.split(","));
+    }
+
+
+    /**
+     * 获取当前服务器的信息。
+     *
+     * <p>该方法没有参数。
+     *
+     * @return Server 返回当前服务器的信息对象。
+     */
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
+    public Server info() {
+        // 从集群中获取当前服务器的实例
+        Server self = cluster.self();
+        // 记录调试信息，输出当前服务器的详细信息
+        log.debug("czRegistry ==> self:{}", self);
+        return self;
+    }
+
+    /**
+     * 获取集群服务器列表。
+     *
+     * <p>该方法没有参数，通过调用集群服务获取当前集群中的所有服务器列表。
+     *
+     * @return 返回一个服务器列表，列表中包含了集群中所有的服务器信息。
+     */
+    @RequestMapping(value = "/cluster", method = RequestMethod.GET)
+    public List<Server> cluster() {
+        // 从集群中获取当前所有服务器列表
+        List<Server> servers = cluster.getServers();
+        // 记录调试信息，输出当前集群服务器列表
+        log.debug("czRegistry ==> servers:{}", servers);
+        return servers;
     }
 
 
