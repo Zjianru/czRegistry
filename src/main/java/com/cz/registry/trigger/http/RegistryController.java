@@ -159,7 +159,7 @@ public class RegistryController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public Server info() {
         // 从集群中获取当前服务器的实例
-        Server self = cluster.self();
+        Server self = cluster.getMY_SELF();
         // 记录调试信息，输出当前服务器的详细信息
         log.debug("czRegistry ==> self:{}", self);
         return self;
@@ -181,5 +181,12 @@ public class RegistryController {
         return servers;
     }
 
-
+    @RequestMapping(value = "/getMaster", method = RequestMethod.GET)
+    public Server getMaster() {
+        // 从集群中获取当前主服务器
+        Server master = cluster.getMaster();
+        // 记录调试信息，输出当前主服务器的信息
+        log.debug("czRegistry ==> master:{}", master);
+        return master;
+    }
 }
