@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.commons.util.InetUtils;
+import org.springframework.cloud.commons.util.InetUtilsProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +27,14 @@ public class Cluster {
 
     String host;
 
-    @Getter
     Server MY_SELF;
 
     ConfigProperties configProperties;
+    Channel channel;
 
-    public Cluster(ConfigProperties configProperties) {
+    public Cluster(ConfigProperties configProperties,Channel channel) {
         this.configProperties = configProperties;
+        this.channel = channel;
     }
 
     @Getter
@@ -51,25 +53,47 @@ public class Cluster {
      * 版本号设置为-1L。
      */
     private void initServers() {
-        host = new InetUtils.HostInfo().getIpAddress();
+        host = convertUrl(new InetUtils(new InetUtilsProperties()).findFirstNonLoopbackHostInfo().getIpAddress());
         MY_SELF = Server.getActiveInstance("http://" + host + ":" + port);
-        log.debug("init self server:{}", MY_SELF);
+        System.out.println("init self server:" + MY_SELF);
 
         List<Server> servers = new ArrayList<>();
         // 遍历配置中提供的注册服务器信息，并初始化每个服务器信息
         configProperties.getServers().forEach(serverInfo -> {
-            Server server = Server.getInstance(serverInfo);
-            servers.add(server); // 将新建的服务器实例添加到服务器列表中
-        });
-        this.servers = servers;
+                    if (serverInfo.equals(MY_SELF.getUrl())) {
+                        servers.add(MY_SELF);
+                    } else {
+                        Server server = Server.getInstance(serverInfo);
+                        servers.add(server); // 将新建的服务器实例添加到服务器列表中
+                    }
+                });
+        this.servers = servers.stream().distinct().toList();
+        System.out.println("init servers:" + this.servers);
         // 开辟线程池, 每隔一段时间执行一次更新服务器状态的任务
         executor.scheduleAtFixedRate(() -> {
-            log.debug("----update servers status----");
-            updateServers();
-            log.debug("----elect master----");
-            electMaster();
+            try {
+                System.out.println("----update servers status----");
+                updateServers();
+                System.out.println("----elect master----");
+                electMaster();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }, 0, timeOut, TimeUnit.MILLISECONDS);
     }
+
+    /**
+     * 检查字符串是否 包含192.168.31.151 有则进行替换
+     * @param ipAddress
+     * @return
+     */
+    private String convertUrl(String ipAddress) {
+        if (ipAddress.contains("192.168.31.151")) {
+            ipAddress = ipAddress.replace("192.168.31.151", "127.0.0.1");
+        }
+        return ipAddress;
+    }
+
 
     /**
      * 选择一个主服务器。
@@ -83,11 +107,11 @@ public class Cluster {
 
         if (masters.isEmpty()) {
             // 如果没有主服务器，进行选举
-            log.debug("no master node,elect master in function [elect master]");
+            log.warn("no master node,elect master in function [elect master]");
             elect();
         } else if (masters.size() > 1) {
             // 如果有多个主服务器，进行选举
-            log.debug("more than one master node,elect master in function [elect master]");
+            log.warn("more than one master node,elect master in function [elect master]");
             elect();
         } else {
             // 如果有一个主服务器，不进行选举，记录当前主服务器信息
@@ -117,9 +141,9 @@ public class Cluster {
         }
         if (candidate != null) {
             candidate.setMaster(true); // 如果找到了候选服务器，则将其设置为主服务器
-            log.debug("elect master success ==>{}", candidate); // 记录选举成功的信息
+            log.info("elect master success ==>{}", candidate); // 记录选举成功的信息
         } else {
-            log.debug("no server is active,elect master defeat");
+            log.info("no server is active,elect master defeat");
         }
     }
 
@@ -127,21 +151,21 @@ public class Cluster {
      * 探测刷新注册中心服务器状态
      */
     private void updateServers() {
-        servers.forEach(server -> {
+        servers.stream().parallel().forEach(server -> {
             try {
-                Server serverInfo = Channel.httpGet(server.getUrl() + "/info", Server.class);
-                log.debug(" health check success ==> server info:{}", serverInfo);
+                if(server.equals(MY_SELF)) return;  // 如果是自己，则不去更新状态
+                Server serverInfo = channel.get(server.getUrl() + "/info", Server.class);
+                log.debug(" ===>>> health check success for " + serverInfo);
                 if (serverInfo != null) {
                     server.setStatus(true);
                     server.setMaster(serverInfo.isMaster());
                     server.setVersion(serverInfo.getVersion());
                 }
-            } catch (Exception exception) {
-                log.debug(" health check defeat ==> server info:{}", server);
+            } catch (Exception ex) {
+                log.debug(" ===>>> health check failed for " + server);
                 server.setStatus(false);
                 server.setMaster(false);
             }
-
         });
     }
 
@@ -152,6 +176,10 @@ public class Cluster {
                 .filter(Server::isMaster)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public Server self() {
+        return MY_SELF;
     }
 }
 

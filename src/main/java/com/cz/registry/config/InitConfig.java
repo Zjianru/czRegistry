@@ -1,6 +1,8 @@
 package com.cz.registry.config;
 
 import com.cz.registry.cluster.Cluster;
+import com.cz.registry.cluster.connect.Channel;
+import com.cz.registry.cluster.connect.impl.HttpCall;
 import com.cz.registry.health.CzHealthChecker;
 import com.cz.registry.health.HealthChecker;
 import com.cz.registry.service.RegistryService;
@@ -37,9 +39,20 @@ public class InitConfig {
     HealthChecker healthChecker(@Autowired RegistryService registryService) {
         return new CzHealthChecker(registryService);
     }
-@Bean
-    public Cluster cluster(@Autowired ConfigProperties configProperties) {
-        return new Cluster(configProperties);
+    @Bean
+    Channel channel() {
+        return new HttpCall(5000);
+    }
+
+    /**
+     * autowire cluster
+     *
+     * @param configProperties config properties
+     * @return Cluster
+     */
+    @Bean(initMethod = "initServers")
+    public Cluster cluster(@Autowired ConfigProperties configProperties, @Autowired Channel channel) {
+        return new Cluster(configProperties, channel);
     }
 
 }

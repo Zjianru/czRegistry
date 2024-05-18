@@ -2,13 +2,12 @@ package com.cz.registry.cluster.connect.impl;
 
 import com.alibaba.fastjson2.JSON;
 import com.cz.registry.cluster.connect.Channel;
-import com.cz.registry.common.RegistryRequest;
 import com.cz.registry.exception.ExErrorCodes;
 import com.cz.registry.exception.RegistryException;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,23 +32,27 @@ public class HttpCall implements Channel {
                 .build();
     }
 
+
     /**
      * post 方式通信
      *
-     * @param request 封装后的请求信息
+     * @param url   url
+     * @param param param
      * @return response
      */
     @Override
-    public String post(RegistryRequest request) {
-        log.debug("czRegistry==> [method]postConnect ==> param {}", request);
+    public <T> T post(String url, String param, Class<T> clazz) {
+        log.debug("czRegistry==> [method]postConnect ==> url=={},param {}", url, param);
         try {
+            RequestBody requestBody = RequestBody.create(JSON_TYPE, param);
+            log.debug("czRegistry==> [method]postConnect ==> requestBody {}", requestBody);
             Request call = new Request.Builder()
-                    .url(request.getUrl())
-                    .post(RequestBody.create(JSON_TYPE, JSON.toJSONString(request.getParams())))
+                    .url(url)
+                    .post(requestBody)
                     .build();
-            String response = Objects.requireNonNull(client.newCall(call).execute().body()).string();
+            String response = client.newCall(call).execute().body().string();
             log.debug("czRegistry==> [method]postConnect ==> response {}", response);
-            return response;
+            return JSON.parseObject(response, clazz);
         } catch (Exception e) {
             throw new RegistryException(e, ExErrorCodes.SOCKET_TIME_OUT);
         }
@@ -58,20 +61,20 @@ public class HttpCall implements Channel {
     /**
      * get 方式通信
      *
-     * @param request 封装后的请求信息
+     * @param url url
      * @return response
      */
     @Override
-    public String get(RegistryRequest request) {
-        log.debug("czRegistry==> [method]getConnect ==> param {}", request.getUrl());
+    public  <T> T  get(String url, Class<T> clazz) {
+        log.debug("czRegistry==> [method]getConnect ==> url {}", url);
         try {
             Request call = new Request.Builder()
-                    .url(request.getUrl())
+                    .url(url)
                     .get()
                     .build();
-            String response = Objects.requireNonNull(client.newCall(call).execute().body()).string();
-            log.debug("czRegistry==> [method]getConnect ==> response {}", response);
-            return response;
+            String response = client.newCall(call).execute().body().string();
+            log.debug("czRegistry==> [method]getConnect ==> responseMsg {}", response);
+            return JSON.parseObject(response, clazz);
         } catch (Exception e) {
             throw new RegistryException(e, ExErrorCodes.SOCKET_TIME_OUT);
         }

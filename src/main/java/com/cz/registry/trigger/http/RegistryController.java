@@ -159,7 +159,7 @@ public class RegistryController {
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public Server info() {
         // 从集群中获取当前服务器的实例
-        Server self = cluster.getMY_SELF();
+        Server self = cluster.self();
         // 记录调试信息，输出当前服务器的详细信息
         log.debug("czRegistry ==> self:{}", self);
         return self;
