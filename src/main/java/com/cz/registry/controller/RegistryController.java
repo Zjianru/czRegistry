@@ -107,7 +107,7 @@ public class RegistryController {
      * @param instance 表示需要重新注册的服务实例的元数据信息，通过RequestBody接收，允许客户端以JSON格式提交。
      *                 方法不返回任何内容，操作结果通过日志记录或直接通过服务注册过程中的反馈来体现。
      */
-    @RequestMapping(value = "/reNew", method = RequestMethod.GET)
+    @RequestMapping(value = "/reNew", method = RequestMethod.POST)
     public void reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
         log.info("reNew service:{} instance:{}", service, instance);
@@ -125,7 +125,8 @@ public class RegistryController {
     public Long version(@RequestParam String service) {
         // 记录请求版本信息的日志
         log.info("version service:{}", service);
-        return registryService.version(service); // 通过服务注册中心查询指定服务的版本号
+        // 通过服务注册中心查询指定服务的版本号
+        return registryService.version(service);
     }
 
     /**
