@@ -1,4 +1,4 @@
-package com.cz.registry.cluster;
+package com.cz.registry.meta;
 
 import lombok.*;
 

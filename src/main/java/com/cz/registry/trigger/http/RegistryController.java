@@ -2,10 +2,11 @@ package com.cz.registry.trigger.http;
 
 import com.alibaba.fastjson2.JSON;
 import com.cz.registry.cluster.Cluster;
-import com.cz.registry.cluster.Server;
+import com.cz.registry.meta.Server;
 import com.cz.registry.meta.InstanceMeta;
 import com.cz.registry.meta.SnapShot;
 import com.cz.registry.service.RegistryService;
+import com.cz.registry.service.impl.CzRegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -217,14 +218,14 @@ public class RegistryController {
     /**
      * 请求处理函数，用于获取当前的快照信息。
      *
-     * <p>该函数没有参数，通过调用{@link RegistryService#snapshot()}方法，
+     * <p>该函数没有参数，通过调用{@link CzRegistryService#snapshot()}方法，
      * 从注册服务中获取当前的快照信息，并将其返回给客户端。</p>
      *
      * @return SnapShot 返回当前的快照信息对象。
      */
     @RequestMapping(value = "/snapshot", method = RequestMethod.GET)
     public SnapShot snapshot() {
-        return registryService.snapshot();
+        return CzRegistryService.snapshot();
     }
 
 }

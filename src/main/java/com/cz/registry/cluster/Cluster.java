@@ -2,6 +2,7 @@ package com.cz.registry.cluster;
 
 import com.cz.registry.cluster.connect.Channel;
 import com.cz.registry.config.ConfigProperties;
+import com.cz.registry.meta.Server;
 import com.cz.registry.meta.SnapShot;
 import com.cz.registry.service.impl.CzRegistryService;
 import lombok.Getter;
@@ -191,6 +192,7 @@ public class Cluster {
      * @return Server 返回当前实例代表的服务器。
      */
     public Server self() {
+        MY_SELF.setVersion(CzRegistryService.getVersion());
         return MY_SELF; // 返回当前实例代表的服务器
     }
 
@@ -214,9 +216,9 @@ public class Cluster {
      */
     private void syncSnapshot() {
         // 检查当前服务器是否为主服务器，并对比版本号
-        if (!MY_SELF.isMaster() && MY_SELF.getVersion() < getMaster().getVersion()) {
+        if (!self().isMaster() && self().getVersion() < getMaster().getVersion()) {
             // 记录日志，说明开始进行同步
-            log.debug("current server is not master,version is {} ,master version is {}", MY_SELF.getVersion(), getMaster().getVersion());
+            log.debug("current server is not master,version is {} ,master version is {}", self().getVersion(), getMaster().getVersion());
             log.debug("start sync from master {}", getMaster());
             // 从主服务器获取快照
             SnapShot master = channel.get(getMaster().getUrl() + "/snapshot", SnapShot.class);

@@ -3,6 +3,7 @@ package com.cz.registry.meta;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.util.Map;
@@ -22,7 +23,7 @@ public class SnapShot {
      * key->service name
      * value->instance list
      */
-    MultiValueMap<String, InstanceMeta> registry;
+    LinkedMultiValueMap<String, InstanceMeta> registry;
 
     /**
      * 记录版本信息,服务粒度

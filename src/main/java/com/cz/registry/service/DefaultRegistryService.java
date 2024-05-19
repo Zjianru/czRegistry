@@ -173,7 +173,7 @@ public abstract class DefaultRegistryService implements RegistryService {
      */
     public static synchronized SnapShot snapshot() {
         // 创建一个新的MultiValueMap来存放服务实例信息，并从REGISTRY中添加所有数据
-        MultiValueMap<String, InstanceMeta> registry = new LinkedMultiValueMap<>();
+        LinkedMultiValueMap<String, InstanceMeta> registry = new LinkedMultiValueMap<>();
         registry.addAll(REGISTRY);
         // 创建一个新的HashMap来存放版本信息，并从VERSIONS中复制所有数据
         Map<String, VersionInfo> versions = new HashMap<>(VERSIONS);
@@ -195,7 +195,7 @@ public abstract class DefaultRegistryService implements RegistryService {
         log.debug("reset REGISTRY...");
         // 清除当前注册表并从快照恢复
         REGISTRY.clear();
-        REGISTRY.addAll(snapshot().getRegistry());
+        REGISTRY.addAll(snapshot.getRegistry());
 
         log.debug("reset VERSIONS...");
         // 清除当前版本信息并从快照恢复
@@ -209,13 +209,22 @@ public abstract class DefaultRegistryService implements RegistryService {
 
         log.debug("reset VERSION...");
         // 设置当前版本到快照的版本
-        VERSION.set(snapshot.getVersion());
+        Long version = snapshot.getVersion();
+        VERSION.set(version);
 
         // 日志记录重置完成
         log.debug("finish RESET...");
         // 返回恢复的版本号
-        return snapshot().getVersion();
+        return version;
     }
 
 
+    /**
+     * 获取当前版本的版本号。
+     *
+     * @return 返回当前版本的版本号。返回值为Long类型，表示版本号的值。
+     */
+    public static synchronized Long getVersion() {
+        return VERSION.get();
+    }
 }
