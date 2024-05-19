@@ -62,11 +62,4 @@ public interface RegistryService {
      * @return 包含各个服务名称及其对应版本号的映射
      */
     Map<String, Long> versions(String... service);
-
-    /**
-     * 获取当前所有服务的快照。
-     *
-     * @return 包含所有服务及其版本信息的快照对象
-     */
-    SnapShot snapshot();
 }

@@ -2,6 +2,8 @@ package com.cz.registry.cluster;
 
 import com.cz.registry.cluster.connect.Channel;
 import com.cz.registry.config.ConfigProperties;
+import com.cz.registry.meta.SnapShot;
+import com.cz.registry.service.impl.CzRegistryService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,10 +78,8 @@ public class Cluster {
                 updateServers();
                 System.out.println("----elect master----");
                 electMaster();
-                // 如果当前服务器不是主服务器并且版本号小于主服务器的版本号，则开始向主服务器进行对准
-                if (!MY_SELF.isMaster() && MY_SELF.getVersion() < getMaster().getVersion()){
-                    syncSnapshot();
-                }
+                System.out.println("----sync snapshot----");
+                syncSnapshot();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -169,7 +169,6 @@ public class Cluster {
                 });
     }
 
-
     /**
      * 获取当前系统中的主服务器。
      * 该方法通过遍历服务器列表，筛选出状态为激活（isStatus）且标记为主服务器（isMaster）的服务器。
@@ -195,7 +194,6 @@ public class Cluster {
         return MY_SELF; // 返回当前实例代表的服务器
     }
 
-
     /**
      * 检查字符串是否 包含192.168.31.151 有则进行替换
      *
@@ -209,9 +207,24 @@ public class Cluster {
         return ipAddress;
     }
 
-
+    /**
+     * 同步快照功能。
+     * 该方法用于检查当前服务器是否为主服务器，如果不是，并且其版本号小于主服务器的版本号，则从主服务器获取快照并进行对准。
+     * 这个过程通过向主服务器请求快照，并使用获取的快照重置本地的状态来完成。
+     */
     private void syncSnapshot() {
-        Server master = getMaster();
+        // 检查当前服务器是否为主服务器，并对比版本号
+        if (!MY_SELF.isMaster() && MY_SELF.getVersion() < getMaster().getVersion()) {
+            // 记录日志，说明开始进行同步
+            log.debug("current server is not master,version is {} ,master version is {}", MY_SELF.getVersion(), getMaster().getVersion());
+            log.debug("start sync from master {}", getMaster());
+            // 从主服务器获取快照
+            SnapShot master = channel.get(getMaster().getUrl() + "/snapshot", SnapShot.class);
+            // 记录获取到的快照，并开始进行状态重置
+            log.debug("get master snapshot:{} start RESET ----", master);
+            Long resetVersion = CzRegistryService.reset(master);
+            log.debug("RESET end,resetVersion:{}", resetVersion);
+        }
     }
 
 

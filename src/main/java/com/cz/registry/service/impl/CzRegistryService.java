@@ -82,15 +82,4 @@ public class CzRegistryService extends DefaultRegistryService {
     public Map<String, Long> versions(String... service) {
         return super.versions(service);
     }
-
-    /**
-     * 获取当前所有注册服务的快照。
-     * todo 可考虑进行深拷贝优化
-     *
-     * @return 返回一个包含当前所有注册服务的快照对象，包括服务实例信息、版本信息和时间戳信息。
-     */
-    @Override
-    public synchronized SnapShot snapshot() {
-        return super.snapshot();
-    }
 }

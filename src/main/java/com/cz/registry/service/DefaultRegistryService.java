@@ -171,8 +171,7 @@ public abstract class DefaultRegistryService implements RegistryService {
      *
      * @return 返回一个包含当前所有注册服务的快照对象，包括服务实例信息、版本信息和时间戳信息。
      */
-    @Override
-    public synchronized SnapShot snapshot() {
+    public static synchronized SnapShot snapshot() {
         // 创建一个新的MultiValueMap来存放服务实例信息，并从REGISTRY中添加所有数据
         MultiValueMap<String, InstanceMeta> registry = new LinkedMultiValueMap<>();
         registry.addAll(REGISTRY);
@@ -183,5 +182,40 @@ public abstract class DefaultRegistryService implements RegistryService {
         // 返回一个包含当前所有注册服务信息的SnapShot对象
         return new SnapShot(registry, versions, VERSION.get(), timeStamps);
     }
+
+    /**
+     * 重置内部状态到给定的快照。
+     * 清除当前状态，并从提供的快照中恢复。
+     *
+     * @param snapshot 包含要恢复的状态信息的快照对象。
+     * @return 返回快照中的版本号。
+     */
+    public static synchronized Long reset(SnapShot snapshot) {
+        // 日志记录开始重置过程
+        log.debug("reset REGISTRY...");
+        // 清除当前注册表并从快照恢复
+        REGISTRY.clear();
+        REGISTRY.addAll(snapshot().getRegistry());
+
+        log.debug("reset VERSIONS...");
+        // 清除当前版本信息并从快照恢复
+        VERSIONS.clear();
+        VERSIONS.putAll(snapshot.getVersions());
+
+        log.debug("reset TIMESTAMPS...");
+        // 清除当前时间戳并从快照恢复
+        TIMESTAMPS.clear();
+        TIMESTAMPS.putAll(snapshot.getTimeStamps());
+
+        log.debug("reset VERSION...");
+        // 设置当前版本到快照的版本
+        VERSION.set(snapshot.getVersion());
+
+        // 日志记录重置完成
+        log.debug("finish RESET...");
+        // 返回恢复的版本号
+        return snapshot().getVersion();
+    }
+
 
 }
