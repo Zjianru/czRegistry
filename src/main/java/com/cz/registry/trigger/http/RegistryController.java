@@ -1,10 +1,9 @@
 package com.cz.registry.trigger.http;
 
-import com.alibaba.fastjson2.JSON;
 import com.cz.registry.cluster.Cluster;
 import com.cz.registry.meta.Server;
 import com.cz.registry.meta.InstanceMeta;
-import com.cz.registry.meta.SnapShot;
+import com.cz.registry.meta.Snapshot;
 import com.cz.registry.service.RegistryService;
 import com.cz.registry.service.impl.CzRegistryService;
 import com.cz.registry.util.RegistryUtils;
@@ -218,7 +217,7 @@ public class RegistryController {
      * @return SnapShot 返回当前的快照信息对象。
      */
     @RequestMapping(value = "/snapshot", method = RequestMethod.GET)
-    public SnapShot snapshot() {
+    public Snapshot snapshot() {
         return CzRegistryService.snapshot();
     }
 

@@ -1,7 +1,6 @@
 package com.cz.registry.service.impl;
 
 import com.cz.registry.meta.InstanceMeta;
-import com.cz.registry.meta.SnapShot;
 import com.cz.registry.service.DefaultRegistryService;
 import lombok.extern.slf4j.Slf4j;
 

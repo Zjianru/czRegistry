@@ -19,7 +19,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegistryRequest implements Serializable {
+public class Request implements Serializable {
     /**
      * 请求方地址
      */

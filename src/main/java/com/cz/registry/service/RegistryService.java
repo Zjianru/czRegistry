@@ -1,7 +1,6 @@
 package com.cz.registry.service;
 
 import com.cz.registry.meta.InstanceMeta;
-import com.cz.registry.meta.SnapShot;
 
 import java.util.List;
 import java.util.Map;

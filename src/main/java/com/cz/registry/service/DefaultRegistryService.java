@@ -1,7 +1,7 @@
 package com.cz.registry.service;
 
 import com.cz.registry.meta.InstanceMeta;
-import com.cz.registry.meta.SnapShot;
+import com.cz.registry.meta.Snapshot;
 import com.cz.registry.meta.VersionInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
@@ -37,6 +37,9 @@ public abstract class DefaultRegistryService implements RegistryService {
      */
     final static Map<String, VersionInfo> VERSIONS = new ConcurrentHashMap<>();
 
+    /**
+     * 注册中心全局版本号
+     */
     final static AtomicLong VERSION = new AtomicLong(0);
 
     /**
@@ -171,7 +174,7 @@ public abstract class DefaultRegistryService implements RegistryService {
      *
      * @return 返回一个包含当前所有注册服务的快照对象，包括服务实例信息、版本信息和时间戳信息。
      */
-    public static synchronized SnapShot snapshot() {
+    public static synchronized Snapshot snapshot() {
         // 创建一个新的MultiValueMap来存放服务实例信息，并从REGISTRY中添加所有数据
         LinkedMultiValueMap<String, InstanceMeta> registry = new LinkedMultiValueMap<>();
         registry.addAll(REGISTRY);
@@ -180,7 +183,7 @@ public abstract class DefaultRegistryService implements RegistryService {
         // 创建一个新的HashMap来存放时间戳信息，并从TIMESTAMPS中复制所有数据
         Map<String, Long> timeStamps = new HashMap<>(TIMESTAMPS);
         // 返回一个包含当前所有注册服务信息的SnapShot对象
-        return new SnapShot(registry, versions, VERSION.get(), timeStamps);
+        return new Snapshot(registry, versions, VERSION.get(), timeStamps);
     }
 
     /**
@@ -190,7 +193,7 @@ public abstract class DefaultRegistryService implements RegistryService {
      * @param snapshot 包含要恢复的状态信息的快照对象。
      * @return 返回快照中的版本号。
      */
-    public static synchronized Long reset(SnapShot snapshot) {
+    public static synchronized Long reset(Snapshot snapshot) {
         // 日志记录开始重置过程
         log.debug("reset REGISTRY...");
         // 清除当前注册表并从快照恢复

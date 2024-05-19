@@ -2,7 +2,7 @@ package com.cz.registry.cluster;
 
 import com.cz.registry.cluster.connect.Channel;
 import com.cz.registry.meta.Server;
-import com.cz.registry.meta.SnapShot;
+import com.cz.registry.meta.Snapshot;
 import com.cz.registry.service.impl.CzRegistryService;
 import lombok.extern.slf4j.Slf4j;
 
@@ -104,7 +104,7 @@ public class ServerHealth {
             log.debug("current server is not master,version is {} ,master version is {}", self.getVersion(), master.getVersion());
             log.debug("start sync from master {}", master);
             // 从主服务器获取快照
-            SnapShot masterSnapshot = channel.get(master.getUrl() + "/snapshot", SnapShot.class);
+            Snapshot masterSnapshot = channel.get(master.getUrl() + "/snapshot", Snapshot.class);
             // 记录获取到的快照，并开始进行状态重置
             log.debug("get master snapshot:{} start RESET ----", masterSnapshot);
             Long resetVersion = CzRegistryService.reset(masterSnapshot);
