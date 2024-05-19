@@ -1,10 +1,12 @@
 package com.cz.registry.service.impl;
 
 import com.cz.registry.meta.InstanceMeta;
+import com.cz.registry.meta.SnapShot;
 import com.cz.registry.service.DefaultRegistryService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * czRegistry service implements
@@ -14,40 +16,81 @@ import java.util.List;
 @Slf4j
 public class CzRegistryService extends DefaultRegistryService {
     /**
-     * register instance
+     * 注册服务实例。
      *
-     * @param service service name
-     * @param instance    register instance
-     * @return register instance
+     * @param service  服务名称
+     * @param instance 待注册的服务实例元数据
+     * @return 返回注册的实例元数据
      */
     @Override
-    public InstanceMeta register(String service, InstanceMeta instance) {
-        log.info("czRegistry==> current class is {} , current register instance is {}", this.getClass().getName(), instance);
+    public synchronized InstanceMeta register(String service, InstanceMeta instance) {
         return super.register(service, instance);
     }
 
     /**
-     * unregister instance
+     * 注销服务实例。
      *
-     * @param service service name
-     * @param instance    register instance
-     * @return register instance
+     * @param service  服务名称
+     * @param instance 待注销的服务实例元数据
+     * @return 若成功注销返回实例元数据，否则返回null
      */
     @Override
-    public InstanceMeta unregister(String service, InstanceMeta instance) {
-        log.info("czRegistry==> current class is {} , current unregister instance is {}", this.getClass().getName(), instance);
+    public synchronized InstanceMeta unregister(String service, InstanceMeta instance) {
         return super.unregister(service, instance);
     }
 
     /**
-     * get all instances
+     * 获取指定服务的所有实例列表。
      *
-     * @param service service name
-     * @return instances
+     * @param service 服务名称
+     * @return 返回服务实例的列表，如果不存在则返回null
      */
     @Override
     public List<InstanceMeta> fetchAll(String service) {
-        log.info("czRegistry==> current class is {} , current fetchAll serviceName is {}", this.getClass().getName(), service);
         return super.fetchAll(service);
+    }
+
+    /**
+     * 更新或刷新服务实例的最新时间戳。
+     *
+     * @param instance 服务实例元数据
+     * @param services 关联的服务名称集合
+     */
+    @Override
+    public synchronized void reNew(InstanceMeta instance, String... services) {
+        super.reNew(instance, services);
+    }
+
+    /**
+     * 获取指定服务的当前版本号。
+     *
+     * @param service 服务名称
+     * @return 返回服务的版本号
+     */
+    @Override
+    public Long version(String service) {
+        return super.version(service);
+    }
+
+    /**
+     * 获取多个服务的当前版本号。
+     *
+     * @param service 服务名称集合
+     * @return 返回一个映射，包含每个服务的版本号
+     */
+    @Override
+    public Map<String, Long> versions(String... service) {
+        return super.versions(service);
+    }
+
+    /**
+     * 获取当前所有注册服务的快照。
+     * todo 可考虑进行深拷贝优化
+     *
+     * @return 返回一个包含当前所有注册服务的快照对象，包括服务实例信息、版本信息和时间戳信息。
+     */
+    @Override
+    public synchronized SnapShot snapshot() {
+        return super.snapshot();
     }
 }

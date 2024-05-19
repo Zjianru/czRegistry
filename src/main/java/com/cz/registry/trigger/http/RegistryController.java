@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.cz.registry.cluster.Cluster;
 import com.cz.registry.cluster.Server;
 import com.cz.registry.meta.InstanceMeta;
+import com.cz.registry.meta.SnapShot;
 import com.cz.registry.service.RegistryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ public class RegistryController {
 
     @Autowired
     Cluster cluster;
-
 
     /**
      * 注册服务实例。
@@ -59,7 +59,6 @@ public class RegistryController {
         return registryService.register(service, instance);
     }
 
-
     /**
      * 取消注册指定的服务实例。
      *
@@ -74,7 +73,6 @@ public class RegistryController {
         // 调用注册中心服务，取消注册指定的服务实例
         return registryService.unregister(service, instance);
     }
-
 
     /**
      * 请求处理函数，用于获取指定服务的所有实例信息。
@@ -148,7 +146,6 @@ public class RegistryController {
         return registryService.versions(service.split(","));
     }
 
-
     /**
      * 获取当前服务器的信息。
      *
@@ -181,6 +178,14 @@ public class RegistryController {
         return servers;
     }
 
+    /**
+     * 获取当前集群中的主服务器。
+     * <p>
+     * 该方法不接受任何参数，通过调用集群服务来获取当前的主服务器信息，并将该信息记录在调试日志中。
+     * <p>
+     *
+     * @return Server 返回当前集群中的主服务器对象。
+     */
     @RequestMapping(value = "/getMaster", method = RequestMethod.GET)
     public Server getMaster() {
         // 从集群中获取当前主服务器
@@ -189,4 +194,37 @@ public class RegistryController {
         log.debug("czRegistry ==> master:{}", master);
         return master;
     }
+
+    /**
+     * 将当前服务器设置为集群中的主服务器。
+     * <p>
+     * 该方法不接受任何参数，通过设置当前服务器的状态为激活，来尝试将其置为集群中的主服务器，并记录当前的主服务器信息。
+     * <p>
+     *
+     * @return Server 返回当前集群中的主服务器对象。
+     */
+    @RequestMapping(value = "/setMaster", method = RequestMethod.GET)
+    public Server setMaster() {
+        cluster.self().setStatus(true);
+        // 从集群中获取当前主服务器
+        Server master = cluster.getMaster();
+        // 记录调试信息
+        log.debug("czRegistry ==> master:{}", master);
+        log.debug("czRegistry ==> self:{}", cluster.self());
+        return master;
+    }
+
+    /**
+     * 请求处理函数，用于获取当前的快照信息。
+     *
+     * <p>该函数没有参数，通过调用{@link RegistryService#snapshot()}方法，
+     * 从注册服务中获取当前的快照信息，并将其返回给客户端。</p>
+     *
+     * @return SnapShot 返回当前的快照信息对象。
+     */
+    @RequestMapping(value = "/snapshot", method = RequestMethod.GET)
+    public SnapShot snapshot() {
+        return registryService.snapshot();
+    }
+
 }

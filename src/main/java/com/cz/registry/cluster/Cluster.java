@@ -32,7 +32,7 @@ public class Cluster {
     ConfigProperties configProperties;
     Channel channel;
 
-    public Cluster(ConfigProperties configProperties,Channel channel) {
+    public Cluster(ConfigProperties configProperties, Channel channel) {
         this.configProperties = configProperties;
         this.channel = channel;
     }
@@ -60,13 +60,13 @@ public class Cluster {
         List<Server> servers = new ArrayList<>();
         // 遍历配置中提供的注册服务器信息，并初始化每个服务器信息
         configProperties.getServers().forEach(serverInfo -> {
-                    if (serverInfo.equals(MY_SELF.getUrl())) {
-                        servers.add(MY_SELF);
-                    } else {
-                        Server server = Server.getInstance(serverInfo);
-                        servers.add(server); // 将新建的服务器实例添加到服务器列表中
-                    }
-                });
+            if (serverInfo.equals(MY_SELF.getUrl())) {
+                servers.add(MY_SELF);
+            } else {
+                Server server = Server.getInstance(serverInfo);
+                servers.add(server); // 将新建的服务器实例添加到服务器列表中
+            }
+        });
         this.servers = servers.stream().distinct().toList();
         System.out.println("init servers:" + this.servers);
         // 开辟线程池, 每隔一段时间执行一次更新服务器状态的任务
@@ -76,22 +76,15 @@ public class Cluster {
                 updateServers();
                 System.out.println("----elect master----");
                 electMaster();
+                // 如果当前服务器不是主服务器并且版本号小于主服务器的版本号，则开始向主服务器进行对准
+                if (!MY_SELF.isMaster() && MY_SELF.getVersion() < getMaster().getVersion()){
+                    syncSnapshot();
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }, 0, timeOut, TimeUnit.MILLISECONDS);
-    }
-
-    /**
-     * 检查字符串是否 包含192.168.31.151 有则进行替换
-     * @param ipAddress
-     * @return
-     */
-    private String convertUrl(String ipAddress) {
-        if (ipAddress.contains("192.168.31.151")) {
-            ipAddress = ipAddress.replace("192.168.31.151", "127.0.0.1");
-        }
-        return ipAddress;
     }
 
 
@@ -148,39 +141,80 @@ public class Cluster {
     }
 
     /**
-     * 探测刷新注册中心服务器状态
+     * 探测并刷新注册中心服务器的状态信息。
+     * 该方法会并行遍历服务器列表，对除自身外的每台服务器进行健康检查，更新其状态、是否为主服务器以及版本信息。
      */
     private void updateServers() {
-        servers.stream().parallel().forEach(server -> {
-            try {
-                if(server.equals(MY_SELF)) return;  // 如果是自己，则不去更新状态
-                Server serverInfo = channel.get(server.getUrl() + "/info", Server.class);
-                log.debug(" ===>>> health check success for " + serverInfo);
-                if (serverInfo != null) {
-                    server.setStatus(true);
-                    server.setMaster(serverInfo.isMaster());
-                    server.setVersion(serverInfo.getVersion());
-                }
-            } catch (Exception ex) {
-                log.debug(" ===>>> health check failed for " + server);
-                server.setStatus(false);
-                server.setMaster(false);
-            }
-        });
+        log.debug("start update servers");
+        servers.parallelStream() // 使用并行流遍历服务器列表以提高效率
+                // 过滤掉当前服务器自身
+                .filter(server -> !server.equals(MY_SELF))
+                .forEach(server -> {
+                    try {
+                        // 尝试从服务器的URL获取服务器信息
+                        Server serverInfo = channel.get(server.getUrl() + "/info", Server.class);
+                        log.debug(" ===>>> health check success for {}", serverInfo);
+                        if (serverInfo != null) {
+                            // 更新服务器状态为健康，设置为主服务器或从服务器状态，并更新版本信息
+                            server.setStatus(true);
+                            server.setMaster(serverInfo.isMaster());
+                            server.setVersion(serverInfo.getVersion());
+                        }
+                    } catch (Exception ex) {
+                        // 如果健康检查失败，则将服务器状态标记为不健康，并设置为非主服务器
+                        log.debug(" ===>>> health check failed for {}", server);
+                        server.setStatus(false);
+                        server.setMaster(false);
+                    }
+                });
     }
 
 
+    /**
+     * 获取当前系统中的主服务器。
+     * 该方法通过遍历服务器列表，筛选出状态为激活（isStatus）且标记为主服务器（isMaster）的服务器。
+     * 如果找到主服务器，则返回该服务器；如果没有找到，则返回null。
+     *
+     * @return Server 返回系统中的主服务器，如果没有找到则返回null。
+     */
     public Server getMaster() {
         return servers.stream()
-                .filter(Server::isStatus)
-                .filter(Server::isMaster)
-                .findFirst()
-                .orElse(null);
+                .filter(Server::isStatus) // 筛选出状态为激活的服务器
+                .filter(Server::isMaster) // 在激活的服务器中筛选出主服务器
+                .findFirst() // 获取第一个符合条件的服务器
+                .orElse(null); // 如果没有找到符合条件的服务器，则返回null
     }
 
+    /**
+     * 获取当前实例代表的服务器。
+     * 这是一个系统内部的服务器标识方法，用于获取当前操作的服务器实例。
+     *
+     * @return Server 返回当前实例代表的服务器。
+     */
     public Server self() {
-        return MY_SELF;
+        return MY_SELF; // 返回当前实例代表的服务器
     }
+
+
+    /**
+     * 检查字符串是否 包含192.168.31.151 有则进行替换
+     *
+     * @param ipAddress ip地址
+     * @return 替换后的ip地址
+     */
+    private String convertUrl(String ipAddress) {
+        if (ipAddress.contains("192.168.31.151")) {
+            ipAddress = ipAddress.replace("192.168.31.151", "127.0.0.1");
+        }
+        return ipAddress;
+    }
+
+
+    private void syncSnapshot() {
+        Server master = getMaster();
+    }
+
+
 }
 
 
