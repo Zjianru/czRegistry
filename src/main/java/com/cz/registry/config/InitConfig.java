@@ -50,7 +50,7 @@ public class InitConfig {
      * @param configProperties config properties
      * @return Cluster
      */
-    @Bean(initMethod = "initServers")
+    @Bean(initMethod = "init")
     public Cluster cluster(@Autowired ConfigProperties configProperties, @Autowired Channel channel) {
         return new Cluster(configProperties, channel);
     }

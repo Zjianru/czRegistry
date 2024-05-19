@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * code desc
+ * registry utils
  *
  * @author Zjianru
  */
@@ -21,4 +21,16 @@ public class RegistryUtils {
         }
     }
 
+    /**
+     * 检查字符串是否 包含192.168.31.151 有则进行替换
+     *
+     * @param ipAddress ip地址
+     * @return 替换后的ip地址
+     */
+    public static String convertUrl(String ipAddress) {
+        if (ipAddress.contains("192.168.31.151")) {
+            ipAddress = ipAddress.replace("192.168.31.151", "127.0.0.1");
+        }
+        return ipAddress;
+    }
 }
