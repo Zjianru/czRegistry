@@ -7,6 +7,7 @@ import com.cz.registry.meta.InstanceMeta;
 import com.cz.registry.meta.SnapShot;
 import com.cz.registry.service.RegistryService;
 import com.cz.registry.service.impl.CzRegistryService;
+import com.cz.registry.util.RegistryUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,9 @@ public class RegistryController {
     @Autowired
     Cluster cluster;
 
+    @Autowired
+    RegistryUtils utils;
+
     /**
      * 注册服务实例。
      *
@@ -41,6 +45,7 @@ public class RegistryController {
     public InstanceMeta register(@RequestParam String service, String host, Integer port) {
         // 记录注册服务的日志信息
         log.info("register service:{} host:{} port:{}", service, host, port);
+        utils.checkMaster();
         // 调用注册服务，返回实例的元数据
         return registryService.register(service, InstanceMeta.http(host, port));
     }
@@ -56,6 +61,7 @@ public class RegistryController {
     public InstanceMeta registerByPost(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录注册服务的日志
         log.info("register service:{} instance:{}", service, instance);
+        utils.checkMaster();
         // 调用注册服务，返回注册结果
         return registryService.register(service, instance);
     }
@@ -71,6 +77,7 @@ public class RegistryController {
     public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录取消注册服务的请求信息
         log.info("unregister service:{} instance:{} ", service, instance);
+        utils.checkMaster();
         // 调用注册中心服务，取消注册指定的服务实例
         return registryService.unregister(service, instance);
     }
@@ -90,20 +97,6 @@ public class RegistryController {
     }
 
     /**
-     * 测试打印实例信息
-     *
-     * @return instance info json
-     */
-    @RequestMapping(value = "/printMetaInfo", method = RequestMethod.GET)
-    public String printMetaInfo() {
-        InstanceMeta instance = InstanceMeta.http("127.0.0.1", 9091)
-                .addParams(Map.of("env", "dev", "tag", "RED"));
-        String msg = JSON.toJSONString(instance);
-        log.info(msg);
-        return msg;
-    }
-
-    /**
      * 重新注册服务实例。
      * 该方法用于当服务实例需要更新或重新注册时调用，通过接收服务名称和实例元数据，来实现服务的重新注册。
      *
@@ -115,6 +108,7 @@ public class RegistryController {
     public void reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
         log.info("reNew service:{} instance:{}", service, instance);
+        utils.checkMaster();
         // 调用注册服务的reNew方法，以实例和服务名称为参数，执行重新注册操作。
         registryService.reNew(instance, service);
     }
