@@ -32,22 +32,6 @@ public class RegistryController {
     @Autowired
     RegistryUtils utils;
 
-    /**
-     * 注册服务实例。
-     *
-     * @param service 要注册的服务名称。
-     * @param host    服务实例所在的主机地址。
-     * @param port    服务实例监听的端口号。
-     * @return InstanceMeta 服务注册后的实例元数据。
-     */
-    @RequestMapping(value = "/register", method = RequestMethod.GET)
-    public InstanceMeta register(@RequestParam String service, String host, Integer port) {
-        // 记录注册服务的日志信息
-        log.info("register service:{} host:{} port:{}", service, host, port);
-        utils.checkMaster();
-        // 调用注册服务，返回实例的元数据
-        return registryService.register(service, InstanceMeta.http(host, port));
-    }
 
     /**
      * 通过POST请求注册服务实例。
@@ -56,7 +40,7 @@ public class RegistryController {
      * @param instance 需要注册的服务实例信息，以JSON格式通过请求体传入。
      * @return InstanceMeta 注册后的服务实例元数据。
      */
-    @RequestMapping(value = "/registerByPost", method = RequestMethod.POST)
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
     public InstanceMeta registerByPost(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录注册服务的日志
         log.info("register service:{} instance:{}", service, instance);
