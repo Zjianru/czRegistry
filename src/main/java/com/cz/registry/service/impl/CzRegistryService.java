@@ -51,13 +51,13 @@ public class CzRegistryService extends DefaultRegistryService {
 
     /**
      * 更新或刷新服务实例的最新时间戳。
-     *
      * @param instance 服务实例元数据
      * @param services 关联的服务名称集合
+     * @return 返回服务实例的版本号
      */
     @Override
-    public synchronized void reNew(InstanceMeta instance, String... services) {
-        super.reNew(instance, services);
+    public synchronized Map<String, Long> reNew(InstanceMeta instance, String... services) {
+        return super.reNew(instance, services);
     }
 
     /**

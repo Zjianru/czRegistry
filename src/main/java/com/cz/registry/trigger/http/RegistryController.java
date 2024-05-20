@@ -79,21 +79,23 @@ public class RegistryController {
         return registryService.fetchAll(service);
     }
 
-    /**
-     * 重新注册服务实例。
-     * 该方法用于当服务实例需要更新或重新注册时调用，通过接收服务名称和实例元数据，来实现服务的重新注册。
-     *
-     * @param service  表示需要重新注册的服务名称。
-     * @param instance 表示需要重新注册的服务实例的元数据信息，通过RequestBody接收，允许客户端以JSON格式提交。
-     *                 方法不返回任何内容，操作结果通过日志记录或直接通过服务注册过程中的反馈来体现。
-     */
     @RequestMapping(value = "/reNew", method = RequestMethod.POST)
-    public void reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
+    public Long reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
         log.info("reNew service:{} instance:{}", service, instance);
         utils.checkMaster();
         // 调用注册服务的reNew方法，以实例和服务名称为参数，执行重新注册操作。
-        registryService.reNew(instance, service);
+        Map<String, Long> versions = registryService.reNew(instance, service);
+        return versions.get(service);
+    }
+
+    @RequestMapping(value = "/reNews", method = RequestMethod.POST)
+    public Map<String, Long> reNews(@RequestParam String service, @RequestBody InstanceMeta instance) {
+        // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
+        log.info("reNews service:{} instance:{}", service, instance);
+        utils.checkMaster();
+        // 调用注册服务的reNew方法，以实例和服务名称为参数，执行重新注册操作。
+         return registryService.reNew(instance, service);
     }
 
     /**

@@ -117,11 +117,12 @@ public abstract class DefaultRegistryService implements RegistryService {
      * @param services 关联的服务名称集合
      */
     @Override
-    public synchronized void reNew(InstanceMeta instance, String... services) {
+    public synchronized Map<String, Long> reNew(InstanceMeta instance, String... services) {
         // 更新每个服务的时间戳信息
         for (String service : services) {
             TIMESTAMPS.put(service + "@" + instance.transferToUrl(), System.currentTimeMillis());
         }
+        return versions(services);
     }
 
     /**

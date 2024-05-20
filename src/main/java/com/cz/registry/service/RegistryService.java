@@ -40,11 +40,13 @@ public interface RegistryService {
 
     /**
      * 更新实例元数据，并关联指定的服务。
+     * 同时会更新实例信息 完成心跳
      *
      * @param instance 要更新的实例元数据
      * @param services 要关联的服务名称，可以是多个
+     * @return 返回当前服务的版本信息
      */
-    void reNew(InstanceMeta instance, String... services);
+    Map<String, Long> reNew(InstanceMeta instance, String... services);
 
     /**
      * 获取指定服务的当前版本号。
