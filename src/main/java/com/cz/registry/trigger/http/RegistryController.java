@@ -56,7 +56,7 @@ public class RegistryController {
      * @param instance 需要注册的服务实例信息，以JSON格式通过请求体传入。
      * @return InstanceMeta 该方法返回取消注册的服务实例的元数据。
      */
-    @RequestMapping(value = "/unregister", method = RequestMethod.POST)
+    @RequestMapping(value = "/unRegister", method = RequestMethod.POST)
     public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance) {
         // 记录取消注册服务的请求信息
         log.info("unregister service:{} instance:{} ", service, instance);
