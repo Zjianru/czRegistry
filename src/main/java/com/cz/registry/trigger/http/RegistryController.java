@@ -1,8 +1,8 @@
 package com.cz.registry.trigger.http;
 
 import com.cz.registry.cluster.Cluster;
-import com.cz.registry.meta.Server;
 import com.cz.registry.meta.InstanceMeta;
+import com.cz.registry.meta.Server;
 import com.cz.registry.meta.Snapshot;
 import com.cz.registry.service.RegistryService;
 import com.cz.registry.service.impl.CzRegistryService;
@@ -79,24 +79,40 @@ public class RegistryController {
         return registryService.fetchAll(service);
     }
 
+    /**
+     * 为单个实例重新注册的服务接口。
+     *
+     * @param service  需要重新注册的服务名称。
+     * @param instance 需要重新注册的服务实例的元数据信息。
+     * @return 返回重新注册后该服务的版本号。
+     */
     @RequestMapping(value = "/reNew", method = RequestMethod.POST)
     public Long reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
-        // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
+        // 记录请求信息
         log.info("reNew service:{} instance:{}", service, instance);
-        utils.checkMaster();
-        // 调用注册服务的reNew方法，以实例和服务名称为参数，执行重新注册操作。
+        utils.checkMaster(); // 检查是否为主节点
+        // 执行重新注册操作
         Map<String, Long> versions = registryService.reNew(instance, service);
         return versions.get(service);
     }
 
+    /**
+     * 批量为多个实例重新注册的服务接口。
+     *
+     * @param service  需要重新注册的服务名称。
+     * @param instance 需要重新注册的服务实例的元数据信息。
+     * @return 返回当前时间戳
+     */
     @RequestMapping(value = "/reNews", method = RequestMethod.POST)
-    public Map<String, Long> reNews(@RequestParam String service, @RequestBody InstanceMeta instance) {
-        // 记录接收到的重新注册请求，包括服务名称和实例元数据信息。
+    public Long reNews(@RequestParam String service, @RequestBody InstanceMeta instance) {
+        // 记录请求信息
         log.info("reNews service:{} instance:{}", service, instance);
-        utils.checkMaster();
-        // 调用注册服务的reNew方法，以实例和服务名称为参数，执行重新注册操作。
-         return registryService.reNew(instance, service);
+        utils.checkMaster(); // 检查是否为主节点
+        // 执行重新注册操作
+        registryService.reNew(instance, service.split(","));
+        return System.currentTimeMillis();
     }
+
 
     /**
      * 请求当前服务的版本信息。
