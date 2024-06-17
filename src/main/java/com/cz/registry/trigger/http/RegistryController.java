@@ -36,80 +36,80 @@ public class RegistryController {
     /**
      * 通过POST请求注册服务实例。
      *
-     * @param service  要注册的服务名称。
+     * @param services  要注册的服务名称。
      * @param instance 需要注册的服务实例信息，以JSON格式通过请求体传入。
      * @return InstanceMeta 注册后的服务实例元数据。
      */
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public InstanceMeta registerByPost(@RequestParam String service, @RequestBody InstanceMeta instance) {
+    public InstanceMeta registerByPost(@RequestParam String services, @RequestBody InstanceMeta instance) {
         // 记录注册服务的日志
-        log.info("register service:{} instance:{}", service, instance);
+        log.info("register service:{} instance:{}", services, instance);
         utils.checkMaster();
         // 调用注册服务，返回注册结果
-        return registryService.register(service, instance);
+        return registryService.register(services, instance);
     }
 
     /**
      * 取消注册指定的服务实例。
      *
-     * @param service  要取消注册的服务名称。
+     * @param services  要取消注册的服务名称。
      * @param instance 需要注册的服务实例信息，以JSON格式通过请求体传入。
      * @return InstanceMeta 该方法返回取消注册的服务实例的元数据。
      */
     @RequestMapping(value = "/unRegister", method = RequestMethod.POST)
-    public InstanceMeta unregister(@RequestParam String service, @RequestBody InstanceMeta instance) {
+    public InstanceMeta unregister(@RequestParam String services, @RequestBody InstanceMeta instance) {
         // 记录取消注册服务的请求信息
-        log.info("unregister service:{} instance:{} ", service, instance);
+        log.info("unregister service:{} instance:{} ", services, instance);
         utils.checkMaster();
         // 调用注册中心服务，取消注册指定的服务实例
-        return registryService.unregister(service, instance);
+        return registryService.unregister(services, instance);
     }
 
     /**
      * 请求处理函数，用于获取指定服务的所有实例信息。
      *
-     * @param service 需要查询的服务名称。
+     * @param services 需要查询的服务名称。
      * @return 返回一个包含该服务所有实例信息的列表。
      */
     @RequestMapping(value = "/fetchAll", method = RequestMethod.GET)
-    public List<InstanceMeta> fetchAll(@RequestParam String service) {
+    public List<InstanceMeta> fetchAll(@RequestParam String services) {
         // 记录请求日志
-        log.info("fetchAll service:{}", service);
+        log.info("fetchAll service:{}", services);
         // 调用服务注册中心，查询并返回指定服务的所有实例信息
-        return registryService.fetchAll(service);
+        return registryService.fetchAll(services);
     }
 
     /**
      * 为单个实例重新注册的服务接口。
      *
-     * @param service  需要重新注册的服务名称。
+     * @param services  需要重新注册的服务名称。
      * @param instance 需要重新注册的服务实例的元数据信息。
      * @return 返回重新注册后该服务的版本号。
      */
     @RequestMapping(value = "/reNew", method = RequestMethod.POST)
-    public Long reNew(@RequestParam String service, @RequestBody InstanceMeta instance) {
+    public Long reNew(@RequestParam String services, @RequestBody InstanceMeta instance) {
         // 记录请求信息
-        log.info("reNew service:{} instance:{}", service, instance);
+        log.info("reNew service:{} instance:{}", services, instance);
         utils.checkMaster(); // 检查是否为主节点
         // 执行重新注册操作
-        Map<String, Long> versions = registryService.reNew(instance, service);
-        return versions.get(service);
+        Map<String, Long> versions = registryService.reNew(instance, services);
+        return versions.get(services);
     }
 
     /**
      * 批量为多个实例重新注册的服务接口。
      *
-     * @param service  需要重新注册的服务名称。
+     * @param services  需要重新注册的服务名称。
      * @param instance 需要重新注册的服务实例的元数据信息。
      * @return 返回当前时间戳
      */
     @RequestMapping(value = "/reNews", method = RequestMethod.POST)
-    public Long reNews(@RequestParam String service, @RequestBody InstanceMeta instance) {
+    public Long reNews(@RequestParam String services, @RequestBody InstanceMeta instance) {
         // 记录请求信息
-        log.info("reNews service:{} instance:{}", service, instance);
+        log.info("reNews service:{} instance:{}", services, instance);
         utils.checkMaster(); // 检查是否为主节点
         // 执行重新注册操作
-        registryService.reNew(instance, service.split(","));
+        registryService.reNew(instance, services.split(","));
         return System.currentTimeMillis();
     }
 
@@ -117,29 +117,29 @@ public class RegistryController {
     /**
      * 请求当前服务的版本信息。
      *
-     * @param service 需要查询版本的服务名称。
+     * @param services 需要查询版本的服务名称。
      * @return 返回对应服务的版本号，类型为Long。
      */
     @RequestMapping(value = "/version", method = RequestMethod.GET)
-    public Long version(@RequestParam String service) {
+    public Long version(@RequestParam String services) {
         // 记录请求版本信息的日志
-        log.info("version service:{}", service);
+        log.info("version service:{}", services);
         // 通过服务注册中心查询指定服务的版本号
-        return registryService.version(service);
+        return registryService.version(services);
     }
 
     /**
      * 查询指定服务的版本信息。
      *
-     * @param service 需要查询版本信息的服务名，多个服务名以逗号分隔。
+     * @param services 需要查询版本信息的服务名，多个服务名以逗号分隔。
      * @return 返回一个Map，其中key为服务名，value为该服务的版本号。
      */
     @RequestMapping(value = "/versions", method = RequestMethod.GET)
-    public Map<String, Long> versions(@RequestParam String service) {
+    public Map<String, Long> versions(@RequestParam String services) {
         // 记录请求信息
-        log.info("versions service:{}", service);
+        log.info("versions service:{}", services);
         // 调用服务注册中心，查询指定服务的版本信息
-        return registryService.versions(service.split(","));
+        return registryService.versions(services.split(","));
     }
 
     /**
